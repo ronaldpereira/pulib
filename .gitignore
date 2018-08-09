@@ -1,0 +1,7 @@
+# Ignores all .pyc files
+*.pyc
+
+# Ignore all dist, build and info folders
+build/
+dist/
+pulib.egg-info/
