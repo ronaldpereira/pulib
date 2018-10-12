@@ -1,66 +1,55 @@
 import math
 
-def pn_from_dataframe(dataframe, data_column, pos_class):
+def pnu_from_dataframe(dataframe, pos_column, pos_class, pos_size=0.8, neg_size=0.8):
     '''
-    Function to generate random positive-negative data from any pandas dataframe. It returns the same dataset with a 'y' column containing the positive-negative data.
+    Function to generate random positive-negative-unlabeled data from any pandas dataframe. It returns the same dataset with a 'y' column containing the positive-negative-unlabeled data.
 
     REQUIRED
 
-    dataframe: pandas.Dataframe to be extracted to positive-negative.
-    data_column: dataframe column to be compared to extract the positive class.
-    pos_class: class in the data_column to be considered as positive.
+    dataframe: pandas.Dataframe to be extracted to positive-negative-unlabeled.
+    pos_column: dataframe column to be compared to extract the positive class.
+    pos_class: class in the pos_column to be considered as positive.
 
     OPTIONAL
 
-    pos_size: positive rate (if between 0 and 1) or positive literal number (greater than one).
+    pos_size: positive rate (if [0, 1]) or positive literal number (greater than one).
     pos_size will default to 0.8 if no value is specified.
+    neg_size: negative rate (if [0, 1]) or positive literal number (greater than one).
+    neg_size will default to 0.8 if no value is specified.
     '''
 
-    dataframe = dataframe.sample(frac=1).reset_index(drop=True)
+    if pos_size > 0 and neg_size > 0:
+        if pos_size <= 1:
+            pos_total = math.floor(pos_size * len(dataframe[dataframe[pos_column] == pos_class]))
 
-    for index, value in enumerate(dataframe.loc[:, data_column]):
-        if value == pos_class:
-            dataframe.loc[index, 'y'] = 1
-        else:
-            dataframe.loc[index, 'y'] = -1
+        if pos_size > 1:
+            pos_total = pos_size
 
-    return dataframe
+        if neg_size <= 1:
+            neg_total = math.floor(neg_size * len(dataframe[dataframe[pos_column] != pos_class]))
 
-def pu_from_y_train(y_train, pos_rate=0.5):
-    '''
-    Function to generate positive-unlabeled data from a y_train. It returns the same y_train containing only positive-unlabeled data.
+        if neg_size > 1:
+            neg_total = neg_size
 
-    REQUIRED
+        dataframe = dataframe.sample(frac=1).reset_index(drop=True)
 
-    y_train: pandas.Dataframe to be extracted to positive-unlabeled.
-
-    OPTIONAL
-
-    pos_rate: positive rate (if between 0 and 1) or positive literal number (greater than one).
-    pos_rate will default to 0.8 if no value is specified.
-    '''
-
-    if pos_rate > 0:
-        if pos_rate < 1:
-            pos_total = math.floor(pos_rate * len(y_train[y_train == 1]))
-
-        if pos_rate > 1:
-            pos_total = pos_rate
-
-        y_train = y_train.sample(frac=1).reset_index(drop=True)
-
-        pos_actual = 0
-        for index, _ in enumerate(y_train):
-            if(y_train.loc[index] == 1):
-                if pos_actual < pos_total:
-                    pos_actual += 1
+        actual_pos = 0
+        actual_neg = 0
+        for index, value in enumerate(dataframe.loc[:, pos_column]):
+            if value == pos_class:
+                if actual_pos < pos_total:
+                    dataframe.loc[index, 'y'] = 1
+                    actual_pos += 1
                 else:
-                    y_train.loc[index] = 0
-            
+                    dataframe.loc[index, 'y'] = 0
             else:
-                y_train.loc[index] = 0
+                if actual_neg < neg_total:
+                    dataframe.loc[index, 'y'] = -1
+                    actual_neg += 1
+                else:
+                    dataframe.loc[index, 'y'] = 0
 
-        return y_train
+        return dataframe
 
     else:
-        raise ArithmeticError('pos_rate must be greater than 0')
+        raise ArithmeticError('pos_size and neg_size must be greater than 0')
