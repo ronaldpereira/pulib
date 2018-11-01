@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pulib",
-    version="1.0.3",
+    version="1.0.4",
     author="Ronald Pereira",
     author_email="ronald.drp11@gmail.com",
     description="Positive-Unlabeled machine learning package",

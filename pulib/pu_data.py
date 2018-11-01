@@ -44,7 +44,7 @@ def pnu_from_dataframe(dataframe, pos_column, pos_class, pos_size=0.8, neg_size=
     neg_size will default to 0.8 if no value is specified.
     '''
 
-    if pos_size > 0 and neg_size > 0:
+    if pos_size >= 0 and neg_size >= 0:
         if pos_size <= 1:
             pos_total = math.floor(pos_size * len(dataframe[dataframe[pos_column] == pos_class]))
 
